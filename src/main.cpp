@@ -10,5 +10,5 @@ int main(void)
     controller->initOpenGLContext();
     controller->run();
 
-	return 0;
+    return 0;
 }
