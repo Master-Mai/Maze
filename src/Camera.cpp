@@ -16,25 +16,25 @@ Camera::Camera() {
 }
 
 void Camera::init() {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(pfov, pratio, pnear, pfar);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(pfov, pratio, pnear, pfar);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
 }
 
-/* ÉãÏñ»úÇ°ÒÆ¡£
-*  distance - ÒÆ¶¯¾àÀë
+/* æ‘„åƒæœºå‰ç§»ã€‚
+*  distance - ç§»åŠ¨è·ç¦»
 */
 void Camera::moveForward(double const distance)
 {
-	cameraX -= distance * sin(radian(cyaw));
-	cameraZ -= distance * cos(radian(cyaw));
+    cameraX -= distance * sin(radian(cyaw));
+    cameraZ -= distance * cos(radian(cyaw));
 }
 
-/* ÉãÏñ»úºóÒÆ¡£
-*  distance - ÒÆ¶¯¾àÀë
+/* æ‘„åƒæœºåç§»ã€‚
+*  distance - ç§»åŠ¨è·ç¦»
 */
 void Camera::moveBack(double const distance)
 {
@@ -42,8 +42,8 @@ void Camera::moveBack(double const distance)
     cameraZ += distance * cos(radian(cyaw));
 }
 
-/* ÉãÏñ»ú×óÒÆ¡£
-*  distance - ÒÆ¶¯¾àÀë
+/* æ‘„åƒæœºå·¦ç§»ã€‚
+*  distance - ç§»åŠ¨è·ç¦»
 */
 void Camera::moveLeft(double const distance)
 {
@@ -51,8 +51,8 @@ void Camera::moveLeft(double const distance)
     cameraZ += distance * sin(radian(cyaw));
 }
 
-/* ÉãÏñ»úÓÒÒÆ¡£
-*  distance - ÒÆ¶¯¾àÀë
+/* æ‘„åƒæœºå³ç§»ã€‚
+*  distance - ç§»åŠ¨è·ç¦»
 */
 void Camera::moveRight(double const distance)
 {
@@ -60,9 +60,9 @@ void Camera::moveRight(double const distance)
     cameraZ -= distance * sin(radian(cyaw));
 }
 
-/* Ğı×ªÉãÏñ»ú¡£
-*  pitch - ¸©Ñö½Ç
-*  yaw   - Æ«º½½Ç
+/* æ—‹è½¬æ‘„åƒæœºã€‚
+*  pitch - ä¿¯ä»°è§’
+*  yaw   - åèˆªè§’
 */
 void Camera::rotate(double const pitch, double const yaw)
 {
@@ -72,13 +72,13 @@ void Camera::rotate(double const pitch, double const yaw)
     else if (cpitch < -90.0) cpitch = -90.0;
 }
 
-/* ÉèÖÃÊÓ³¡½Ç */
+/* è®¾ç½®è§†åœºè§’ */
 void Camera::setFOV(double fov)
 {
     pfov = fov;
 }
 
-/* ÉèÖÃ»­Ãæ³¤¿í±È */
+/* è®¾ç½®ç”»é¢é•¿å®½æ¯” */
 void Camera::setAspectRatio(double ratio)
 {
     pratio = ratio;
@@ -89,8 +89,8 @@ void Camera::setSensitivity(double s)
     sensitivity = s;
 }
 
-/* ÉèÖÃÏà»ú£¨³õÊ¼£©Î»ÖÃ¡£
-*  (x, y, z) - Ïà»ú×ø±ê
+/* è®¾ç½®ç›¸æœºï¼ˆåˆå§‹ï¼‰ä½ç½®ã€‚
+*  (x, y, z) - ç›¸æœºåæ ‡
 */
 void Camera::setPosition(double x, double y, double z)
 {
@@ -99,7 +99,7 @@ void Camera::setPosition(double x, double y, double z)
     cameraZ = z;
 }
 
-/* ¸üĞÂÏà»ú½Ç¶È */
+/* æ›´æ–°ç›¸æœºè§’åº¦ */
 void Camera::updateDirection(double const mouseX, double const mouseY)
 {
     if (isFirst) {
@@ -110,20 +110,20 @@ void Camera::updateDirection(double const mouseX, double const mouseY)
     rotate((mouseY - originY) * sensitivity, (originX - mouseX) * sensitivity);
 }
 
-/* ¸üĞÂÏà»úÎ»ÖÃ */
+/* æ›´æ–°ç›¸æœºä½ç½® */
 void Camera::updatePosition()
 {
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(cameraX, cameraY, cameraZ,
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(cameraX, cameraY, cameraZ,
               cameraX - sin(radian(cyaw)) * cos(radian(cpitch)),
               cameraY - sin(radian(cpitch)),
               cameraZ - cos(radian(cyaw)) * cos(radian(cpitch)),
               0, 1, 0);
 }
 
-/* ½Ç¶È×ª»¡¶È */
+/* è§’åº¦è½¬å¼§åº¦ */
 double Camera::radian(double degree)
 {
-	return degree * PI / 180.0;
+    return degree * PI / 180.0;
 }
