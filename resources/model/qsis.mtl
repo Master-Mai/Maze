@@ -1,0 +1,88 @@
+newmtl lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd 1a9e2a65.dds
+Ni 1.00
+newmtl pasted__a9abf1b_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd 5a9abf1b.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__b61d6c76_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd b61d6c76.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__c02a711_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd 7c02a711.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__d09af6f7_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd d09af6f7.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__d0a16eb_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd 4d0a16eb.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__e994474_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd 3e994474.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__f07f524d_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd f07f524d.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__f0b5488b_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd f0b5488b.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00
+newmtl pasted__f6ef8804_dds
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.70 0.70 0.70
+Tf 1.00 1.00 1.00
+map_Kd f6ef8804.dds
+Ni 1.50
+Ks 0.10 0.10 0.10
+Ns 10.00

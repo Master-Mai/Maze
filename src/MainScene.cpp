@@ -1,6 +1,9 @@
 #include "MainScene.h"
 #include <GLFW/glfw3.h>
 
+/* 导入3D模型-英雄 */
+obj3dmodel hero(".\\resources\\model\\boy.obj");
+
 void drawCube(GLfloat ox, GLfloat oy, GLfloat oz, GLfloat length) {
     glMatrixMode(GL_MODELVIEW);
     glBegin(GL_QUADS);
@@ -46,4 +49,5 @@ void MainScene::update()
 {
     drawCube(-0.05f, -0.05f, -0.05f, 0.1f);
     drawCube(-2.5f, -6.0f, -2.5f, 5.0f);
+	hero.draw(6, -1, -1, -1);
 }

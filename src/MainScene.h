@@ -2,6 +2,7 @@
 #define MY_SCENE_H
 
 #include "Scene.h"
+#include "obj3dmodel.h"
 
 class MainScene : public Scene {
 public:
