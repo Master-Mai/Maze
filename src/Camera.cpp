@@ -68,8 +68,8 @@ void Camera::rotate(double const pitch, double const yaw)
 {
     cpitch = pitch;
     cyaw = yaw;
-    if (cpitch > 90.0) cpitch = 90.0;
-    else if (cpitch < -90.0) cpitch = -90.0;
+    if (cpitch > 89.9) cpitch = 89.9;
+    else if (cpitch < -89.9) cpitch = -89.9;
 }
 
 /* 设置视场角 */
