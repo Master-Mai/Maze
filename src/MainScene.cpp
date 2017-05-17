@@ -1,53 +1,30 @@
 #include "MainScene.h"
 #include <GLFW/glfw3.h>
 
-/* 导入3D模型-英雄 */
-obj3dmodel hero(".\\resources\\model\\boy.obj");
+/* 导入3D模型 */
+Model boy("resources/model/boy.obj");
+Model monkey("resources/model/monkey.obj");
 
-void drawCube(GLfloat ox, GLfloat oy, GLfloat oz, GLfloat length) {
-    glMatrixMode(GL_MODELVIEW);
-    glBegin(GL_QUADS);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(ox, oy, oz);
-    glVertex3f(ox, oy + length, oz);
-    glVertex3f(ox + length, oy + length, oz);
-    glVertex3f(ox + length, oy, oz);
+void MainScene::init() {
+    /* 添加光源 */
+    glEnable(GL_LIGHTING);
+    GLfloat ambient[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat position[] = { 0.0, 0.0, 0.0, 1.0 };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+    glEnable(GL_LIGHT0);
+    /*glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);*/
 
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(ox, oy, oz + length);
-    glVertex3f(ox, oy + length, oz + length);
-    glVertex3f(ox + length, oy + length, oz + length);
-    glVertex3f(ox + length, oy, oz + length);
-
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(ox, oy, oz);
-    glVertex3f(ox, oy, oz + length);
-    glVertex3f(ox + length, oy, oz + length);
-    glVertex3f(ox + length, oy, oz);
-
-    glColor3f(1.0f, 1.0f, 0.0f);
-    glVertex3f(ox, oy + length, oz);
-    glVertex3f(ox, oy + length, oz + length);
-    glVertex3f(ox + length, oy + length, oz + length);
-    glVertex3f(ox + length, oy + length, oz);
-
-    glColor3f(1.0f, 0.0f, 1.0f);
-    glVertex3f(ox, oy, oz);
-    glVertex3f(ox, oy, oz + length);
-    glVertex3f(ox, oy + length, oz + length);
-    glVertex3f(ox, oy + length, oz);
-
-    glColor3f(0.0f, 1.0f, 1.0f);
-    glVertex3f(ox + length, oy, oz);
-    glVertex3f(ox + length, oy, oz + length);
-    glVertex3f(ox + length, oy + length, oz + length);
-    glVertex3f(ox + length, oy + length, oz);
-    glEnd();
+    boy.compile(-1.0, -1.0, -1.0);
+    monkey.compile(1.0, 1.0, 1.0);
 }
 
 void MainScene::update()
 {
-    drawCube(-0.05f, -0.05f, -0.05f, 0.1f);
-    drawCube(-2.5f, -6.0f, -2.5f, 5.0f);
-	hero.draw(6, -1, -1, -1);
+    boy.draw();
+    monkey.draw();
 }

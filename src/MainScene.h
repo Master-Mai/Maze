@@ -2,10 +2,11 @@
 #define MY_SCENE_H
 
 #include "Scene.h"
-#include "obj3dmodel.h"
+#include "Model.h"
 
 class MainScene : public Scene {
 public:
+    void init();
     void update();
 };
 
