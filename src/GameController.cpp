@@ -70,7 +70,19 @@ void GameController::initOpenGLContext()
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     
+    /* 深度测试 */
     glEnable(GL_DEPTH_TEST);
+
+    /* 抗锯齿 */
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH_HINT);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     camera->init();
 
     /* 设置游戏场景 */
