@@ -1,7 +1,118 @@
 #include "GameController.h"
 #include "MainScene.h"
 #include "Model.h"
+//天空盒
+#include <Windows.h>  
+#include <gl/GLU.h>  
+#include <gl/glaux.h>  
+#include <GL/glut.h>  
+#include <stdio.h>  
 
+static GLuint texName[6];
+AUX_RGBImageRec * imageRec[6];
+AUX_RGBImageRec * CreateTextureFromBmp(int i)
+{
+	FILE *File = NULL;
+	char *Filename;
+	switch (i)
+	{
+	case 1:
+		Filename = "Skybox/1.bmp";
+		break;
+	case 2:
+		Filename = "Skybox/2.bmp";
+		break;
+	case 3:
+		Filename = "Skybox/3.bmp";
+		break;
+	case 4:
+		Filename = "Skybox/4.bmp";
+		break;
+	case 5:
+		Filename = "Skybox/5.bmp";
+		break;
+	case 6:
+		Filename = "Skybox/6.bmp";
+		break;
+	default:
+		break;
+	}
+
+	File = fopen(Filename, "r");
+	if (!File)
+		return 0;
+	fclose(File);
+	return auxDIBImageLoad(Filename);
+
+}
+void drawSkybox(){
+	for (int i = 1; i <= 6; i++){
+		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+		int x = 0, y = 0, z = 0;
+		int height = 10;
+		int width = height;
+		int length = height;
+		glBindTexture(GL_TEXTURE_2D, texName[i]);
+		switch (i)
+		{
+		case 1:
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(x - width, y + height, z + length);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(x + width, y + height, z + length);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(x + width, y - height, z + length);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(x - width, y - height, z + length);
+			glEnd();
+			break;
+		case 2:
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(x + width, y - height, z - length);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(x + width, y + height, z - length);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(x - width, y + height, z - length);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(x - width, y - height, z - length);
+			glEnd();
+			break;
+		case 3:
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(x + length, y - height, z + height);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(x + length, y + height, z + height);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(x + length, y + height, z - height);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(x + length, y - height, z - height);
+			glEnd();
+			break;
+		case 4:
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(x - length, y + height, z - height);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(x - length, y + height, z + height);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(x - length, y - height, z + height);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(x - length, y - height, z - height);
+			glEnd();
+			break;
+		case 5:
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(x + length, y + length, z - height);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(x + length, y + length, z + height);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(x - length, y + length, z + height);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(x - length, y + length, z - height);
+			glEnd();
+			break;
+		case 6:
+			glBegin(GL_QUADS);
+			glTexCoord2f(1.0f, 0.0f); glVertex3f(x + length, y - length, z - height);
+			glTexCoord2f(1.0f, 1.0f); glVertex3f(x + length, y - length, z + height);
+			glTexCoord2f(0.0f, 1.0f); glVertex3f(x - length, y - length, z + height);
+			glTexCoord2f(0.0f, 0.0f); glVertex3f(x - length, y - length, z - height);
+			glEnd();
+			glFlush();
+			break;
+		default:
+			break;
+		}
+
+		glDisable(GL_TEXTURE_2D);
+	}
+}
+//天空盒
 GameController* GameController::instance = new GameController();
 
 GameController::GameController() {
@@ -69,7 +180,23 @@ void GameController::initOpenGLContext()
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    
+	for (int i = 1; i <= 6; i++){
+		imageRec[i] = CreateTextureFromBmp(i);
+		if (!imageRec)
+			exit(EXIT_FAILURE);
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		glGenTextures(1, &texName[i]);
+		glBindTexture(GL_TEXTURE_2D, texName[i]);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageRec[i]->sizeX, imageRec[i]->sizeX,
+			0, GL_RGB, GL_UNSIGNED_BYTE, imageRec[i]->data);
+	}
     /* 深度测试 */
     glEnable(GL_DEPTH_TEST);
 
@@ -100,13 +227,14 @@ void GameController::run()
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		drawSkybox();
         scene->update();
 
         updateCamera();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
+		
         /* Poll for and process events */
         glfwPollEvents();
     }
