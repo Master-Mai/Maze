@@ -1,8 +1,10 @@
 #include "MainScene.h"
+#include "SnowParticle.h"
 #include <GLFW/glfw3.h>
 
 /* 导入3D模型 */
-Model cube("resources/model/cube_with_diffuse_texture.3ds");
+Model island("resources/model/low-poly-mill.obj");
+SnowParticle snowParticle;
 
 void MainScene::init() {
     /* 添加光源 */
@@ -24,23 +26,23 @@ void MainScene::init() {
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculation
 
 
-    //glEnable(GL_LIGHTING);
-    //glEnable(GL_LIGHT0);    // Uses default lighting parameters
-    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-    //glEnable(GL_NORMALIZE);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    glEnable(GL_NORMALIZE);
 
-    //GLfloat LightAmbient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    //GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    //GLfloat LightPosition[] = { 0.0f, 0.0f, 15.0f, 1.0f };
-    //glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
-    //glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
-    //glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
-    //glEnable(GL_LIGHT1);
+    GLfloat LightAmbient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+    GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat LightPosition[] = { 0.0f, 0.0f, 15.0f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
+    glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
+    glEnable(GL_LIGHT1);
 
-    cube.init(0.0, 0.0, 0.0, 0.1);
+    island.init(0.0, -4.0, 2.0, 0.1);
+    snowParticle.init();
 }
 
 void MainScene::update()
 {
-    cube.draw();
+    island.draw();
+    snowParticle.DrawParticle();
 }

@@ -387,7 +387,9 @@ void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, 
                         glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, 1 - mesh->mTextureCoords[0][vertexIndex].y); //mTextureCoords[channel][vertex]
                     }
 
-                glNormal3fv(&mesh->mNormals[vertexIndex].x);
+                glNormal3f(mesh->mNormals[vertexIndex].x * scale + x,
+                    mesh->mNormals[vertexIndex].y * scale + y,
+                    mesh->mNormals[vertexIndex].z * scale + z);
                 glVertex3f(mesh->mVertices[vertexIndex].x * scale + x,
                     mesh->mVertices[vertexIndex].y * scale + y,
                     mesh->mVertices[vertexIndex].z * scale + z);

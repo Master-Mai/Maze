@@ -20,7 +20,7 @@ GameController::~GameController()
 void GameController::handleKeyboardEvents()
 {
     /* 更新相机位置 */
-    double vel = 0.001;
+    double vel = 0.005;
     if (keyPressed(GLFW_KEY_W)) camera->moveForward(vel);
     if (keyPressed(GLFW_KEY_S)) camera->moveBack(vel);
     if (keyPressed(GLFW_KEY_A)) camera->moveLeft(vel);
