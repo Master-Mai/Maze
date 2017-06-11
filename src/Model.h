@@ -16,7 +16,7 @@
 class Model
 {
 public:
-    Model(std::string filename);
+    Model(std::string filename, bool t);
     ~Model();
     void draw();
     bool Import3DFromFile(const std::string& pFile);
@@ -41,6 +41,7 @@ private:
     GLuint* textureIds;	
     Assimp::Importer importer;
     GLuint listIndex;
+    bool loadTexture;
 };
 
 #endif // !_OBJ3DMODEL_H_

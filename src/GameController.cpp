@@ -78,7 +78,7 @@ void GameController::initOpenGLContext()
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    
+
     /* …Ó∂»≤‚ ‘ */
     glEnable(GL_DEPTH_TEST);
 

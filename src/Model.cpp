@@ -8,11 +8,11 @@
 #define aisgl_min(x, y) (x < y ? x : y)
 #define aisgl_max(x, y) (y > x ? y : x)
 
-Model::Model(std::string filename)
+Model::Model(std::string filename, bool t)
 {
     Import3DFromFile(filename);
     path = filename;
-    init(0.0);
+    loadTexture = t;
 }
 
 Model::~Model()
@@ -338,7 +338,7 @@ void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, 
     // draw all meshes assigned to this node
     for (; n < nd->mNumMeshes; ++n)
     {
-        const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
+        const aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
 
         apply_material(sc->mMaterials[mesh->mMaterialIndex]);
 
@@ -380,7 +380,7 @@ void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, 
                 int vertexIndex = face->mIndices[i];	// get group index for current index
                 if (mesh->mColors[0] != NULL)
                     Color4f(&mesh->mColors[0][vertexIndex]);
-                if (mesh->mNormals != NULL)
+                if (mesh->mNormals != NULL && loadTexture)
 
                     if (mesh->HasTextureCoords(0))		//HasTextureCoords(texture_coordinates_set)
                     {

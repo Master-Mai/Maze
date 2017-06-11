@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 
 /* 导入3D模型 */
-Model island("resources/model/low-poly-mill.obj");
+Model island("resources/model/low-poly-mill.obj", false);
 SnowParticle snowParticle;
 
 void MainScene::init() {
@@ -19,7 +19,7 @@ void MainScene::init() {
 
     glEnable(GL_TEXTURE_2D);
     glShadeModel(GL_SMOOTH);		 // Enables Smooth Shading
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
     glClearDepth(1.0f);				// Depth Buffer Setup
     glEnable(GL_DEPTH_TEST);		// Enables Depth Testing
     glDepthFunc(GL_LEQUAL);			// The Type Of Depth Test To Do
