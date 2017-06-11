@@ -8,7 +8,7 @@
 Camera::Camera() {
     isFirst = true;
     sensitivity = 1.0;
-    pfov = 45.0, pratio = 1.0, pnear = 0.1, pfar = 20.0;
+    pfov = 45.0, pratio = 1.0, pnear = 0.1, pfar = 1000.0;
     cpitch = cyaw = 0.0;
     cameraX = 0.0;
     cameraY = 0.0;

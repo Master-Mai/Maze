@@ -1,46 +1,42 @@
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
-#include <vector> 
+#include <map> 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <GLFW/glfw3.h>
-
-struct V {
-    double X;
-    double Y;
-    double Z;
-};
-struct VT {
-    double TU;
-    double TV;
-};
-struct VN {
-    double NX;
-    double NY;
-    double NZ;
-};
-struct F { // f Vertex1/Texture1/Normal1 Vertex2/Texture2/Normal2 Vertex3/Texture3/Normal3
-    int V[3];
-    int T[3];
-    int N[3];
-};
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+#include "assimp/DefaultLogger.hpp"
+#include "assimp/LogStream.hpp"
 
 class Model
 {
 public:
-    Model(const char* filename);
+    Model(std::string filename);
     ~Model();
-    void parse(const char* filename);
-    void compile(double dx, double dy, double dz, double YU = 1.0);
     void draw();
+    bool Import3DFromFile(const std::string& pFile);
+    std::string getBasePath(const std::string& path);
+    int LoadGLTextures(const aiScene* scene);
+    void init();
+    void Color4f(const aiColor4D *color);
+    void set_float4(float f[4], float a, float b, float c, float d);
+    void color4_to_float4(const aiColor4D *c, float f[4]);
+    void apply_material(const aiMaterial *mtl);
+    void recursive_render(const struct aiScene *sc, const struct aiNode* nd, float scale);
+    void drawAiScene(const aiScene* scene);
 
 private:
-    std::vector<V> VList;  // 顶点
-    std::vector<VT> VTList; // 纹理坐标
-    std::vector<VN> VNList; // 法向量
-    std::vector<F> FList; // 面
+    const aiScene* scene = NULL;
+    GLuint scene_list = 0;
+    aiVector3D scene_min, scene_max, scene_center;
+    std::map<std::string, GLuint*> textureIdMap;
+    std::string path;
+    GLuint* textureIds;	
+    Assimp::Importer importer;
     GLuint listIndex;
 };
 

@@ -1,105 +1,357 @@
+#include <gl/glew.h>
+#include <GL/GLU.h>
+#include <GLFW/glfw3.h>
+#include <IL/il.h>
+#include <iostream>
 #include "Model.h"
 
-using namespace std;
-
-Model::Model(const char* filename)
+Model::Model(std::string filename)
 {
-    parse(filename);
+    Import3DFromFile(filename);
+    path = filename;
+    init();
 }
 
 Model::~Model()
 {
-}
+    textureIdMap.clear();
 
-void Model::parse(const char * filename)
-{
-    ifstream ifs(filename);
-    string s;
-    F *f;
-    V *v;
-    VN *vn;
-    VT *vt;
-    while (getline(ifs, s)) {
-        if (s.length() < 2) continue;
-        if (s[0] == 'v') {
-            if (s[1] == 't') { // vt 0.581151 0.979929 纹理
-                istringstream in(s);
-                vt = new VT();
-                string head;
-                in >> head >> vt->TU >> vt->TV;
-                VTList.push_back(*vt);
-            }
-            else if (s[1] == 'n') { // vn 0.637005 -0.0421857 0.769705 法向量
-                istringstream in(s);
-                vn = new VN();
-                string head;
-                in >> head >> vn->NX >> vn->NY >> vn->NZ;
-                VNList.push_back(*vn);
-            }
-            else { // v -53.0413 158.84 -135.806 点
-                istringstream in(s);
-                v = new V();
-                string head;
-                in >> head >> v->X >> v->Y >> v->Z;
-                VList.push_back(*v);
-            }
-        }
-        else if (s[0] == 'f') { // f 7/9/21 1/10/22 5/11/23 面
-            for (int i = s.size() - 1; i >= 0; i--) {
-                if (s[i] == '/') s[i] = ' ';
-            }
-            istringstream in(s);
-            f = new F();
-            string head;
-            in >> head;
-            for (int i = 0; i < 3; i++) {
-                if (VList.size() != 0) {
-                    in >> f->V[i];
-                    f->V[i] -= 1;
-                }
-                if (VTList.size() != 0) {
-                    in >> f->T[i];
-                    f->T[i] -= 1;
-                }
-                if (VNList.size() != 0) {
-                    in >> f->N[i];
-                    f->N[i] -= 1;
-                }
-            }
-            FList.push_back(*f);
-        }
-    }
-}
-
-/* 编译到显示列表
-*  (dx, dy, dz) - 模型原点坐标
-*  YU           - 缩放系数，缩放比例为1 / YU
-*/
-void Model::compile(double dx, double dy, double dz, double YU)
-{
-    listIndex = glGenLists(1);
-    glNewList(listIndex, GL_COMPILE);
-    for (size_t i = 0; i < FList.size(); i++)
+    if (textureIds)
     {
-        glBegin(GL_TRIANGLES); // 绘制三角形GL_TRIANGLES;GL_LINE_LOOP;GL_LINES;GL_POINTS
-        if (VTList.size() != 0) glTexCoord2d(VTList[FList[i].T[0]].TU, VTList[FList[i].T[0]].TV); // 纹理
-        if (VNList.size() != 0) glNormal3d(VNList[FList[i].N[0]].NX, VNList[FList[i].N[0]].NY, VNList[FList[i].N[0]].NZ); // 法向量
-        glVertex3d(VList[FList[i].V[0]].X / YU + dx, VList[FList[i].V[0]].Y / YU + dy, VList[FList[i].V[0]].Z / YU + dz); // 上顶点
-
-        if (VTList.size() != 0) glTexCoord2d(VTList[FList[i].T[1]].TU, VTList[FList[i].T[1]].TV); // 纹理
-        if (VNList.size() != 0) glNormal3d(VNList[FList[i].N[1]].NX, VNList[FList[i].N[1]].NY, VNList[FList[i].N[1]].NZ); // 法向量
-        glVertex3d(VList[FList[i].V[1]].X / YU + dx, VList[FList[i].V[1]].Y / YU + dy, VList[FList[i].V[1]].Z / YU + dz); // 左下
-
-        if (VTList.size() != 0) glTexCoord2d(VTList[FList[i].T[2]].TU, VTList[FList[i].T[2]].TV); // 纹理
-        if (VNList.size() != 0) glNormal3d(VNList[FList[i].N[2]].NX, VNList[FList[i].N[2]].NY, VNList[FList[i].N[2]].NZ); // 法向量
-        glVertex3d(VList[FList[i].V[2]].X / YU + dx, VList[FList[i].V[2]].Y / YU + dy, VList[FList[i].V[2]].Z / YU + dz); // 上顶点
-
-        glEnd(); // 三角形绘制结束
+        delete[] textureIds;
+        textureIds = NULL;
     }
-    glEndList();
 }
 
 void Model::draw()
 {
     glCallList(listIndex);
+}
+
+bool Model::Import3DFromFile(const std::string& pFile)
+{
+    // Check if file exists
+    std::ifstream fin(pFile.c_str());
+    if (!fin.fail())
+    {
+        fin.close();
+    }
+    else
+    {
+        //MessageBox(NULL, ("Couldn't open file: " + pFile).c_str(), "ERROR", MB_OK | MB_ICONEXCLAMATION);
+        return false;
+    }
+
+    scene = importer.ReadFile(pFile, aiProcessPreset_TargetRealtime_Quality);
+
+    // If the import failed, report it
+    if (!scene)
+    {
+        return false;
+    }
+
+    // We're done. Everything will be cleaned up by the importer destructor
+    return true;
+}
+
+std::string Model::getBasePath(const std::string& path)
+{
+    size_t pos = path.find_last_of("\\/");
+    return (std::string::npos == pos) ? "" : path.substr(0, pos + 1);
+}
+
+int Model::LoadGLTextures(const aiScene* scene)
+{
+    ILboolean success;
+
+    /* Before calling ilInit() version should be checked. */
+    if (ilGetInteger(IL_VERSION_NUM) < IL_VERSION)
+    {
+        /// wrong DevIL version ///
+        std::string err_msg = "Wrong DevIL version. Old devil.dll in system32/SysWow64?";
+        char* cErr_msg = (char *)err_msg.c_str();
+        return -1;
+    }
+
+    ilInit(); /* Initialization of DevIL */
+
+    /* getTexture Filenames and Numb of Textures */
+    for (unsigned int m = 0; m<scene->mNumMaterials; m++)
+    {
+        int texIndex = 0;
+        aiReturn texFound = AI_SUCCESS;
+
+        aiString path;	// filename
+
+        while (texFound == AI_SUCCESS)
+        {
+            texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+            textureIdMap[path.data] = NULL; //fill map with textures, pointers still NULL yet
+            texIndex++;
+        }
+    }
+
+    int numTextures = textureIdMap.size();
+
+    /* array with DevIL image IDs */
+    ILuint* imageIds = NULL;
+    imageIds = new ILuint[numTextures];
+
+    /* generate DevIL Image IDs */
+    ilGenImages(numTextures, imageIds); /* Generation of numTextures image names */
+
+                                        /* create and fill array with GL texture ids */
+    textureIds = new GLuint[numTextures];
+    glGenTextures(numTextures, textureIds); /* Texture name generation */
+
+                                            /* get iterator */
+    std::map<std::string, GLuint*>::iterator itr = textureIdMap.begin();
+
+    std::string basepath = getBasePath(path);
+    for (int i = 0; i<numTextures; i++)
+    {
+
+        //save IL image ID
+        std::string filename = (*itr).first;  // get filename
+        (*itr).second = &textureIds[i];	  // save texture id for filename in map
+        itr++;								  // next texture
+
+
+        ilBindImage(imageIds[i]); /* Binding of DevIL image name */
+        std::string fileloc = basepath + filename;	/* Loading of image */
+        success = ilLoadImage(fileloc.c_str());
+
+        if (success) /* If no error occurred: */
+        {
+            // Convert every colour component into unsigned byte.If your image contains 
+            // alpha channel you can replace IL_RGB with IL_RGBA
+            success = ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
+            if (!success)
+            {
+                return -1;
+            }
+            // Binding of texture name
+            glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+            // redefine standard texture values
+            // We will use linear interpolation for magnification filter
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            // We will use linear interpolation for minifying filter
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            // Texture specification
+            glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH),
+                ilGetInteger(IL_IMAGE_HEIGHT), 0, ilGetInteger(IL_IMAGE_FORMAT), GL_UNSIGNED_BYTE,
+                ilGetData());
+            // we also want to be able to deal with odd texture dimensions
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+            glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+            glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+        }
+        else
+        {
+            /* Error occurred */
+            //MessageBox(NULL, ("Couldn't load Image: " + fileloc).c_str(), "ERROR", MB_OK | MB_ICONEXCLAMATION);
+        }
+    }
+    // Because we have already copied image data into texture data  we can release memory used by image.
+    ilDeleteImages(numTextures, imageIds);
+
+    // Cleanup
+    delete[] imageIds;
+    imageIds = NULL;
+
+    return true;
+}
+
+// All Setup For OpenGL goes here
+void Model::init()
+{
+    LoadGLTextures(scene);
+    drawAiScene(scene);
+}
+
+
+// Can't send color down as a pointer to aiColor4D because AI colors are ABGR.
+void Model::Color4f(const aiColor4D *color)
+{
+    glColor4f(color->r, color->g, color->b, color->a);
+}
+
+void Model::set_float4(float f[4], float a, float b, float c, float d)
+{
+    f[0] = a;
+    f[1] = b;
+    f[2] = c;
+    f[3] = d;
+}
+
+void Model::color4_to_float4(const aiColor4D *c, float f[4])
+{
+    f[0] = c->r;
+    f[1] = c->g;
+    f[2] = c->b;
+    f[3] = c->a;
+}
+
+void Model::apply_material(const aiMaterial *mtl)
+{
+    float c[4];
+
+    GLenum fill_mode;
+    int ret1, ret2;
+    aiColor4D diffuse;
+    aiColor4D specular;
+    aiColor4D ambient;
+    aiColor4D emission;
+    float shininess, strength;
+    int two_sided;
+    int wireframe;
+    unsigned int max;	// changed: to unsigned
+
+    int texIndex = 0;
+    aiString texPath;	//contains filename of texture
+
+    if (AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, texIndex, &texPath))
+    {
+        //bind texture
+        unsigned int texId = *textureIdMap[texPath.data];
+        glBindTexture(GL_TEXTURE_2D, texId);
+    }
+
+    set_float4(c, 0.8f, 0.8f, 0.8f, 1.0f);
+    if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse))
+        color4_to_float4(&diffuse, c);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, c);
+
+    set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
+    if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &specular))
+        color4_to_float4(&specular, c);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
+
+    set_float4(c, 0.2f, 0.2f, 0.2f, 1.0f);
+    if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &ambient))
+        color4_to_float4(&ambient, c);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, c);
+
+    set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
+    if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &emission))
+        color4_to_float4(&emission, c);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, c);
+
+    max = 1;
+    ret1 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &shininess, &max);
+    max = 1;
+    ret2 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS_STRENGTH, &strength, &max);
+    if ((ret1 == AI_SUCCESS) && (ret2 == AI_SUCCESS))
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess * strength);
+    else {
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+        set_float4(c, 0.0f, 0.0f, 0.0f, 0.0f);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
+    }
+
+    max = 1;
+    if (AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_ENABLE_WIREFRAME, &wireframe, &max))
+        fill_mode = wireframe ? GL_LINE : GL_FILL;
+    else
+        fill_mode = GL_FILL;
+    glPolygonMode(GL_FRONT_AND_BACK, fill_mode);
+
+    max = 1;
+    if ((AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided)
+        glEnable(GL_CULL_FACE);
+    else
+        glDisable(GL_CULL_FACE);
+}
+
+
+void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, float scale)
+{
+    unsigned int i;
+    unsigned int n = 0, t;
+    aiMatrix4x4 m = nd->mTransformation;
+
+    aiMatrix4x4 m2;
+    aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+    m = m * m2;
+
+    // update transform
+    m.Transpose();
+    glPushMatrix();
+    glMultMatrixf((float*)&m);
+
+    // draw all meshes assigned to this node
+    for (; n < nd->mNumMeshes; ++n)
+    {
+        const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
+
+        apply_material(sc->mMaterials[mesh->mMaterialIndex]);
+
+
+        if (mesh->mNormals == NULL)
+        {
+            glDisable(GL_LIGHTING);
+        }
+        else
+        {
+            glEnable(GL_LIGHTING);
+        }
+
+        if (mesh->mColors[0] != NULL)
+        {
+            glEnable(GL_COLOR_MATERIAL);
+        }
+        else
+        {
+            glDisable(GL_COLOR_MATERIAL);
+        }
+
+        for (t = 0; t < mesh->mNumFaces; ++t) {
+            const struct aiFace* face = &mesh->mFaces[t];
+            GLenum face_mode;
+
+            switch (face->mNumIndices)
+            {
+            case 1: face_mode = GL_POINTS; break;
+            case 2: face_mode = GL_LINES; break;
+            case 3: face_mode = GL_TRIANGLES; break;
+            default: face_mode = GL_POLYGON; break;
+            }
+
+            glBegin(face_mode);
+
+            for (i = 0; i < face->mNumIndices; i++)		// go through all vertices in face
+            {
+                int vertexIndex = face->mIndices[i];	// get group index for current index
+                if (mesh->mColors[0] != NULL)
+                    Color4f(&mesh->mColors[0][vertexIndex]);
+                if (mesh->mNormals != NULL)
+
+                    if (mesh->HasTextureCoords(0))		//HasTextureCoords(texture_coordinates_set)
+                    {
+                        glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, 1 - mesh->mTextureCoords[0][vertexIndex].y); //mTextureCoords[channel][vertex]
+                    }
+
+                glNormal3fv(&mesh->mNormals[vertexIndex].x);
+                glVertex3fv(&mesh->mVertices[vertexIndex].x);
+            }
+            glEnd();
+        }
+    }
+
+    // draw all children
+    for (n = 0; n < nd->mNumChildren; ++n)
+    {
+        recursive_render(sc, nd->mChildren[n], scale);
+    }
+
+    glPopMatrix();
+}
+
+void Model::drawAiScene(const aiScene* scene)
+{
+    listIndex = glGenLists(1);
+    glNewList(listIndex, GL_COMPILE);
+    recursive_render(scene, scene->mRootNode, 0.5);
+    glEndList();
 }
