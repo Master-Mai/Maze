@@ -1,7 +1,5 @@
 #include "GameController.h"
 #include "Camera.h"
-#include <iostream>
-
 
 int main(void)
 {

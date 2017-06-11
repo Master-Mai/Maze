@@ -16,15 +16,22 @@ GameController::~GameController()
     delete scene;
 }
 
-/* 更新相机位置 */
-void GameController::updateCamera()
+/* 处理键盘事件 */
+void GameController::handleKeyboardEvents()
 {
+    /* 更新相机位置 */
     double vel = 0.001;
     if (keyPressed(GLFW_KEY_W)) camera->moveForward(vel);
     if (keyPressed(GLFW_KEY_S)) camera->moveBack(vel);
     if (keyPressed(GLFW_KEY_A)) camera->moveLeft(vel);
     if (keyPressed(GLFW_KEY_D)) camera->moveRight(vel);
     camera->updatePosition();
+
+    /* 其他键盘事件处理 */
+    if (keyPressed(GLFW_KEY_ESCAPE)) {
+        glfwTerminate();
+        exit(0);
+    }
 }
 
 GameController * GameController::getInstance()
@@ -60,12 +67,14 @@ void GameController::initOpenGLContext()
     memset(keys, 0, sizeof(keys));
 
     camera = new Camera();
+    camera->setOrigin(width / 2.0, height / 2.0);
     camera->setAspectRatio((double)width / height);
     camera->setSensitivity(1.0);
     camera->setPosition(0.0, 0.0, 2.0);
     
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -88,12 +97,13 @@ void GameController::initOpenGLContext()
     /* 设置游戏场景 */
     scene = new MainScene();
     scene->init();
+
+    glfwSetCursorPos(window, instance->width / 2.0, instance->height / 2.0);
 }
 
 /* 游戏主循环 */
 void GameController::run()
 {
-    int counter = 0;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -102,7 +112,7 @@ void GameController::run()
 
         scene->update();
 
-        updateCamera();
+        handleKeyboardEvents();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -138,4 +148,5 @@ void GameController::key_callback(GLFWwindow * window, int key, int scancode, in
 void GameController::cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
 {
     instance->camera->updateDirection(xpos, ypos);
+    glfwSetCursorPos(window, instance->width / 2.0, instance->height / 2.0);
 }

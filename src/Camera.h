@@ -18,9 +18,9 @@ public:
     void setPosition(double x, double y, double z);
     void updateDirection(double const mouseX, double const mouseY);
     void updatePosition();
+    void setOrigin(int x, int y);
 
 private:
-    bool isFirst;
     double originX, originY;
     double sensitivity;
     double pfov, pratio, pnear, pfar;

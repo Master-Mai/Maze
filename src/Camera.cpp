@@ -1,12 +1,10 @@
 #include "Camera.h"
 #include <cmath>
-#include <iostream>
 #include <GL/glew.h>
 #include <GL/GLU.h>
 #include <GLFW/glfw3.h>
 
 Camera::Camera() {
-    isFirst = true;
     sensitivity = 1.0;
     pfov = 45.0, pratio = 1.0, pnear = 0.1, pfar = 1000.0;
     cpitch = cyaw = 0.0;
@@ -66,8 +64,8 @@ void Camera::moveRight(double const distance)
 */
 void Camera::rotate(double const pitch, double const yaw)
 {
-    cpitch = pitch;
-    cyaw = yaw;
+    cpitch += pitch;
+    cyaw += yaw;
     if (cpitch > 89.9) cpitch = 89.9;
     else if (cpitch < -89.9) cpitch = -89.9;
 }
@@ -102,11 +100,6 @@ void Camera::setPosition(double x, double y, double z)
 /* 更新相机角度 */
 void Camera::updateDirection(double const mouseX, double const mouseY)
 {
-    if (isFirst) {
-        isFirst = false;
-        originX = mouseX;
-        originY = mouseY;
-    }
     rotate((mouseY - originY) * sensitivity, (originX - mouseX) * sensitivity);
 }
 
@@ -120,6 +113,13 @@ void Camera::updatePosition()
               cameraY - sin(radian(cpitch)),
               cameraZ - cos(radian(cyaw)) * cos(radian(cpitch)),
               0, 1, 0);
+}
+
+/* 设置鼠标原点 */
+void Camera::setOrigin(int x, int y)
+{
+    originX = x;
+    originY = y;
 }
 
 /* 角度转弧度 */
