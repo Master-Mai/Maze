@@ -5,11 +5,14 @@
 #include <iostream>
 #include "Model.h"
 
+#define aisgl_min(x, y) (x < y ? x : y)
+#define aisgl_max(x, y) (y > x ? y : x)
+
 Model::Model(std::string filename)
 {
     Import3DFromFile(filename);
     path = filename;
-    init();
+    init(0.0);
 }
 
 Model::~Model()
@@ -45,13 +48,16 @@ bool Model::Import3DFromFile(const std::string& pFile)
     scene = importer.ReadFile(pFile, aiProcessPreset_TargetRealtime_Quality);
 
     // If the import failed, report it
-    if (!scene)
-    {
+    if (!scene) {
         return false;
+    } else {
+        get_bounding_box(&scene_min, &scene_max);
+        scene_center.x = (scene_min.x + scene_max.x) / 2.0f;
+        scene_center.y = (scene_min.y + scene_max.y) / 2.0f;
+        scene_center.z = (scene_min.z + scene_max.z) / 2.0f;
+        
+        return true;
     }
-
-    // We're done. Everything will be cleaned up by the importer destructor
-    return true;
 }
 
 std::string Model::getBasePath(const std::string& path)
@@ -164,10 +170,10 @@ int Model::LoadGLTextures(const aiScene* scene)
 }
 
 // All Setup For OpenGL goes here
-void Model::init()
+void Model::init(double x, double y, double z, double factor)
 {
     LoadGLTextures(scene);
-    drawAiScene(scene);
+    drawAiScene(scene, factor, x, y, z);
 }
 
 
@@ -264,21 +270,70 @@ void Model::apply_material(const aiMaterial *mtl)
         glDisable(GL_CULL_FACE);
 }
 
+void Model::get_bounding_box_for_node(const aiNode* nd,
+                               aiVector3D* min,
+                               aiVector3D* max,
+                               aiMatrix4x4* trafo) {
+    aiMatrix4x4 prev;
+    unsigned int n = 0, t;
 
-void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, float scale)
+    prev = *trafo;
+    aiMultiplyMatrix4(trafo, &nd->mTransformation);
+
+    for (; n < nd->mNumMeshes; ++n) {
+        const aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
+        for (t = 0; t < mesh->mNumVertices; ++t) {
+
+            aiVector3D tmp = mesh->mVertices[t];
+            aiTransformVecByMatrix4(&tmp, trafo);
+
+            min->x = aisgl_min(min->x, tmp.x);
+            min->y = aisgl_min(min->y, tmp.y);
+            min->z = aisgl_min(min->z, tmp.z);
+
+            max->x = aisgl_max(max->x, tmp.x);
+            max->y = aisgl_max(max->y, tmp.y);
+            max->z = aisgl_max(max->z, tmp.z);
+        }
+    }
+
+    for (n = 0; n < nd->mNumChildren; ++n) {
+        get_bounding_box_for_node(nd->mChildren[n], min, max, trafo);
+    }
+    *trafo = prev;
+}
+
+void Model::get_bounding_box(aiVector3D* min, aiVector3D* max)
+{
+    aiMatrix4x4 trafo;
+    aiIdentityMatrix4(&trafo);
+
+    min->x = min->y = min->z = 1e10f;
+    max->x = max->y = max->z = -1e10f;
+    get_bounding_box_for_node(scene->mRootNode, min, max, &trafo);
+}
+
+void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, float scale, float x, float y, float z)
 {
     unsigned int i;
     unsigned int n = 0, t;
-    aiMatrix4x4 m = nd->mTransformation;
+    /*aiMatrix4x4 m = nd->mTransformation;
 
     aiMatrix4x4 m2;
-    aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
-    m = m * m2;
+    aiMatrix4x4::Translation(scene_center, m2);
+
+    aiMatrix4x4 m3;
+    aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m3);
+
+    aiMatrix4x4 m4;
+    aiMatrix4x4::Translation(aiVector3D(0, 0, 200), m4);
+
+    m = m * m2 * m3 * m4;*/
 
     // update transform
-    m.Transpose();
+    //m.Transpose();
     glPushMatrix();
-    glMultMatrixf((float*)&m);
+    //glMultMatrixf((float*)&m);
 
     // draw all meshes assigned to this node
     for (; n < nd->mNumMeshes; ++n)
@@ -333,7 +388,9 @@ void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, 
                     }
 
                 glNormal3fv(&mesh->mNormals[vertexIndex].x);
-                glVertex3fv(&mesh->mVertices[vertexIndex].x);
+                glVertex3f(mesh->mVertices[vertexIndex].x * scale + x,
+                    mesh->mVertices[vertexIndex].y * scale + y,
+                    mesh->mVertices[vertexIndex].z * scale + z);
             }
             glEnd();
         }
@@ -342,16 +399,16 @@ void Model::recursive_render(const struct aiScene *sc, const struct aiNode* nd, 
     // draw all children
     for (n = 0; n < nd->mNumChildren; ++n)
     {
-        recursive_render(sc, nd->mChildren[n], scale);
+        recursive_render(sc, nd->mChildren[n], scale, x, y, z);
     }
 
     glPopMatrix();
 }
 
-void Model::drawAiScene(const aiScene* scene)
+void Model::drawAiScene(const aiScene* scene, double factor, double x, double y, double z)
 {
     listIndex = glGenLists(1);
     glNewList(listIndex, GL_COMPILE);
-    recursive_render(scene, scene->mRootNode, 0.5);
+    recursive_render(scene, scene->mRootNode, factor, x, y, z);
     glEndList();
 }

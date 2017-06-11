@@ -37,7 +37,7 @@ void MainScene::init() {
     //glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
     //glEnable(GL_LIGHT1);
 
-    cube.init();
+    cube.init(0.0, 0.0, 0.0, 0.1);
 }
 
 void MainScene::update()

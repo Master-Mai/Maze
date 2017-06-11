@@ -70,7 +70,7 @@ void GameController::initOpenGLContext()
     camera->setOrigin(width / 2.0, height / 2.0);
     camera->setAspectRatio((double)width / height);
     camera->setSensitivity(1.0);
-    camera->setPosition(0.0, 0.0, 2.0);
+    camera->setPosition(0.0, 0.0, 10.0);
     
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetKeyCallback(window, key_callback);
